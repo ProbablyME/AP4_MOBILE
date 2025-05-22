@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<players>
+    <player id="1">
+        <name>RL_Player1</name>
+        <avatar>rl_player1</avatar>
+    </player>
+    <player id="2">
+        <name>RL_Champion</name>
+        <avatar>rl_champion</avatar>
+    </player>
+    <player id="3">
+        <name>RocketAce</name>
+        <avatar>rocket_ace</avatar>
+    </player>
+    <player id="4">
+        <name>lalalala</name>
+        <avatar>rockdzadaz</avatar>
+    </player>
+    <player id="5">
+        <name>Rooooo</name>
+        <avatar>dzadazdazda</avatar>
+    </player>
+    <!-- … ajoute autant de <player> que tu veux … -->
+</players>

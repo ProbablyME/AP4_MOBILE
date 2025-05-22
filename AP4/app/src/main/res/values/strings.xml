@@ -1,0 +1,31 @@
+<resources>
+    <string name="app_name">AP4</string>
+    <string name="txtTitre">Nous somme la </string>
+    <string name="txtNom">Karmine Corp </string>
+    <string name="txtBtnRocketLeague">Rocket League</string>
+    <string name="txtbtnLeagueOfLegendsLec">LOL LEC</string>
+    <string name="txtbtnValorant">Valorant</string>
+    <string name="txtbtnSuperSmashBrosUltimate">SSBU</string>
+    <string name="txtListeJoueurSSBU">Joueurs Super Smash Bros Ultimate</string>
+    <string name="txtListeJoueurValorant">Joueurs Valorant</string>
+    <string name="txtListeJoueurLOLLec">Joueurs League Of Legends LEC </string>
+    <string name="txtListeJoueurRocketLeague">Joueurs Rocket League</string>
+    <string name="txtBtnRetour">Retour</string>
+
+    <string name="dlg_title_confirmation">Confirmation</string>
+    <string name="dlg_msg_choix_jeu">Voulez-vous vraiment choisir « %1$s » ?</string>
+    <string name="toast_jeu_selectionne">%1$s sélectionné !</string>
+
+    <string name="reservation_confirmed">Votre réservation pour KCX est confirmée !</string>
+    <string name="reservation_canceled">Réservation pour KCX annulée.</string>
+
+    <string name="txtMenuRecherche">Rechercher</string>
+    <string name="txtMenuReservation">Réserver</string>
+
+    <string name="hint_recherche">Entrez votre recherche</string>
+    <string name="btn_rechercher">Rechercher</string>
+
+
+
+
+</resources>
