@@ -1,0 +1,1070 @@
+USE [master]
+GO
+/****** Object:  Database [AP4]    Script Date: 23/05/2025 18:53:45 ******/
+CREATE DATABASE [AP4]
+ CONTAINMENT = NONE
+ ON  PRIMARY 
+( NAME = N'AP4', FILENAME = N'C:\Program Files\Microsoft SQL Server\MSSQL16.MSSQLSERVER\MSSQL\DATA\AP4.mdf' , SIZE = 73728KB , MAXSIZE = UNLIMITED, FILEGROWTH = 65536KB )
+ LOG ON 
+( NAME = N'AP4_log', FILENAME = N'C:\Program Files\Microsoft SQL Server\MSSQL16.MSSQLSERVER\MSSQL\DATA\AP4_log.ldf' , SIZE = 73728KB , MAXSIZE = 2048GB , FILEGROWTH = 65536KB )
+ WITH CATALOG_COLLATION = DATABASE_DEFAULT, LEDGER = OFF
+GO
+ALTER DATABASE [AP4] SET COMPATIBILITY_LEVEL = 160
+GO
+IF (1 = FULLTEXTSERVICEPROPERTY('IsFullTextInstalled'))
+begin
+EXEC [AP4].[dbo].[sp_fulltext_database] @action = 'enable'
+end
+GO
+ALTER DATABASE [AP4] SET ANSI_NULL_DEFAULT OFF 
+GO
+ALTER DATABASE [AP4] SET ANSI_NULLS OFF 
+GO
+ALTER DATABASE [AP4] SET ANSI_PADDING OFF 
+GO
+ALTER DATABASE [AP4] SET ANSI_WARNINGS OFF 
+GO
+ALTER DATABASE [AP4] SET ARITHABORT OFF 
+GO
+ALTER DATABASE [AP4] SET AUTO_CLOSE OFF 
+GO
+ALTER DATABASE [AP4] SET AUTO_SHRINK OFF 
+GO
+ALTER DATABASE [AP4] SET AUTO_UPDATE_STATISTICS ON 
+GO
+ALTER DATABASE [AP4] SET CURSOR_CLOSE_ON_COMMIT OFF 
+GO
+ALTER DATABASE [AP4] SET CURSOR_DEFAULT  GLOBAL 
+GO
+ALTER DATABASE [AP4] SET CONCAT_NULL_YIELDS_NULL OFF 
+GO
+ALTER DATABASE [AP4] SET NUMERIC_ROUNDABORT OFF 
+GO
+ALTER DATABASE [AP4] SET QUOTED_IDENTIFIER OFF 
+GO
+ALTER DATABASE [AP4] SET RECURSIVE_TRIGGERS OFF 
+GO
+ALTER DATABASE [AP4] SET  DISABLE_BROKER 
+GO
+ALTER DATABASE [AP4] SET AUTO_UPDATE_STATISTICS_ASYNC OFF 
+GO
+ALTER DATABASE [AP4] SET DATE_CORRELATION_OPTIMIZATION OFF 
+GO
+ALTER DATABASE [AP4] SET TRUSTWORTHY OFF 
+GO
+ALTER DATABASE [AP4] SET ALLOW_SNAPSHOT_ISOLATION OFF 
+GO
+ALTER DATABASE [AP4] SET PARAMETERIZATION SIMPLE 
+GO
+ALTER DATABASE [AP4] SET READ_COMMITTED_SNAPSHOT OFF 
+GO
+ALTER DATABASE [AP4] SET HONOR_BROKER_PRIORITY OFF 
+GO
+ALTER DATABASE [AP4] SET RECOVERY FULL 
+GO
+ALTER DATABASE [AP4] SET  MULTI_USER 
+GO
+ALTER DATABASE [AP4] SET PAGE_VERIFY CHECKSUM  
+GO
+ALTER DATABASE [AP4] SET DB_CHAINING OFF 
+GO
+ALTER DATABASE [AP4] SET FILESTREAM( NON_TRANSACTED_ACCESS = OFF ) 
+GO
+ALTER DATABASE [AP4] SET TARGET_RECOVERY_TIME = 60 SECONDS 
+GO
+ALTER DATABASE [AP4] SET DELAYED_DURABILITY = DISABLED 
+GO
+ALTER DATABASE [AP4] SET ACCELERATED_DATABASE_RECOVERY = OFF  
+GO
+EXEC sys.sp_db_vardecimal_storage_format N'AP4', N'ON'
+GO
+ALTER DATABASE [AP4] SET QUERY_STORE = ON
+GO
+ALTER DATABASE [AP4] SET QUERY_STORE (OPERATION_MODE = READ_WRITE, CLEANUP_POLICY = (STALE_QUERY_THRESHOLD_DAYS = 30), DATA_FLUSH_INTERVAL_SECONDS = 900, INTERVAL_LENGTH_MINUTES = 60, MAX_STORAGE_SIZE_MB = 1000, QUERY_CAPTURE_MODE = AUTO, SIZE_BASED_CLEANUP_MODE = AUTO, MAX_PLANS_PER_QUERY = 200, WAIT_STATS_CAPTURE_MODE = ON)
+GO
+USE [AP4]
+GO
+/****** Object:  User [admin]    Script Date: 23/05/2025 18:53:45 ******/
+CREATE USER [admin] FOR LOGIN [admin] WITH DEFAULT_SCHEMA=[dbo]
+GO
+ALTER ROLE [db_owner] ADD MEMBER [admin]
+GO
+/****** Object:  UserDefinedFunction [dbo].[VerifLoginPassword]    Script Date: 23/05/2025 18:53:46 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE FUNCTION [dbo].[VerifLoginPassword](@Login VARCHAR(50), @Password VARCHAR(128)) RETURNS BIT
+AS
+BEGIN
+    DECLARE @estValide BIT = 0;
+    --DECLARE @hashedPassword VARCHAR(128) = CONVERT(VARCHAR(128),HASHBYTES('SHA2_512',@Password),2)
+
+    IF EXISTS (SELECT 1 FROM Adherents WHERE mail = @Login AND password = CONVERT(VARCHAR(128),HASHBYTES('SHA2_512',@Password),2))
+
+    BEGIN
+        SET @estValide = 1;
+    END
+    RETURN @estValide;
+END;
+GO
+/****** Object:  Table [dbo].[Adherents]    Script Date: 23/05/2025 18:53:46 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Adherents](
+	[idAdherents] [int] IDENTITY(1,1) NOT NULL,
+	[nom] [varchar](50) NULL,
+	[prenom] [varchar](50) NULL,
+	[mail] [varchar](50) NULL,
+	[adresse] [varchar](50) NULL,
+	[dateAdhesion] [date] NULL,
+	[age] [int] NULL,
+	[NbEvenement] [int] NULL,
+	[password] [varchar](128) NULL,
+ CONSTRAINT [PK__Adherent__AF5420A03ED1E0F8] PRIMARY KEY CLUSTERED 
+(
+	[idAdherents] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[Evenements]    Script Date: 23/05/2025 18:53:46 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Evenements](
+	[idEvenement] [int] IDENTITY(1,1) NOT NULL,
+	[dateEvenement] [date] NULL,
+	[idEquipe] [int] NULL,
+	[nomEvenement] [varchar](50) NULL,
+	[descriptionEvenement] [varchar](100) NULL,
+	[idLieu] [int] NOT NULL,
+	[idType] [int] NOT NULL,
+	[heureDebut] [time](7) NULL,
+	[heureFin] [time](7) NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[idEvenement] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[Appel]    Script Date: 23/05/2025 18:53:46 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Appel](
+	[idAdherents] [int] NOT NULL,
+	[idEvenement] [int] NOT NULL,
+	[presence] [bit] NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[idAdherents] ASC,
+	[idEvenement] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  View [dbo].[EvenementsPersonnesPresentes]    Script Date: 23/05/2025 18:53:46 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE VIEW [dbo].[EvenementsPersonnesPresentes]
+AS
+SELECT dbo.Evenements.idEvenement, dbo.Evenements.nomEvenement, dbo.Evenements.dateEvenement, dbo.Adherents.idAdherents, dbo.Adherents.nom AS NomAdherent, dbo.Adherents.prenom AS PrenomAdherent, 
+                  dbo.Appel.presence
+FROM     dbo.Evenements INNER JOIN
+                  dbo.Appel ON dbo.Evenements.idEvenement = dbo.Appel.idEvenement INNER JOIN
+                  dbo.Adherents ON dbo.Appel.idAdherents = dbo.Adherents.idAdherents
+WHERE  (dbo.Appel.presence = 1)
+GO
+/****** Object:  Table [dbo].[Joueur]    Script Date: 23/05/2025 18:53:46 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Joueur](
+	[idAdherents] [int] NOT NULL,
+	[post] [varchar](50) NULL,
+	[jeu] [varchar](50) NULL,
+	[salaire] [money] NULL,
+	[contrat] [varchar](50) NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[idAdherents] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[dirigeant]    Script Date: 23/05/2025 18:53:46 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[dirigeant](
+	[idAdherents] [int] NOT NULL,
+	[role] [varchar](50) NULL,
+	[jeu] [varchar](50) NULL,
+	[salaire] [money] NULL,
+	[contrat] [varchar](50) NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[idAdherents] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  View [dbo].[ListeAdherents]    Script Date: 23/05/2025 18:53:46 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE VIEW [dbo].[ListeAdherents]
+AS
+SELECT dbo.Adherents.idAdherents, dbo.Adherents.nom, dbo.Adherents.prenom, CASE WHEN Dirigeant.idAdherents IS NOT NULL THEN 'Organisateur' WHEN Joueur.idAdherents IS NOT NULL 
+                  THEN 'Joueur' ELSE 'Invité' END AS RoleAdherent
+FROM     dbo.Adherents LEFT OUTER JOIN
+                  dbo.dirigeant ON dbo.Adherents.idAdherents = dbo.dirigeant.idAdherents LEFT OUTER JOIN
+                  dbo.Joueur ON dbo.Adherents.idAdherents = dbo.Joueur.idAdherents
+GO
+/****** Object:  Table [dbo].[Aborder]    Script Date: 23/05/2025 18:53:46 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Aborder](
+	[idReunion] [int] NOT NULL,
+	[idSujet] [int] NOT NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[idReunion] ASC,
+	[idSujet] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[AdherentsPresents]    Script Date: 23/05/2025 18:53:46 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[AdherentsPresents](
+	[idAdherents] [int] NOT NULL,
+	[idReunion] [int] NOT NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[idAdherents] ASC,
+	[idReunion] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[contenuMessage]    Script Date: 23/05/2025 18:53:46 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[contenuMessage](
+	[idAdherents] [int] NOT NULL,
+	[idMessage] [int] NOT NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[idAdherents] ASC,
+	[idMessage] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[Equipe]    Script Date: 23/05/2025 18:53:46 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Equipe](
+	[idEquipe] [int] IDENTITY(1,1) NOT NULL,
+	[nomEquipe] [varchar](50) NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[idEquipe] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[HistoAdh]    Script Date: 23/05/2025 18:53:46 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[HistoAdh](
+	[IdHisto] [int] IDENTITY(1,1) NOT NULL,
+	[dateHisto] [datetime] NULL,
+	[nom] [varchar](50) NULL,
+	[prenom] [varchar](50) NULL,
+	[mail] [varchar](320) NULL,
+	[adresse] [varchar](50) NULL,
+	[dateAdhesion] [datetime] NULL,
+	[age] [int] NULL,
+	[nbEvenement] [int] NULL,
+ CONSTRAINT [PK_HistoAdh] PRIMARY KEY CLUSTERED 
+(
+	[IdHisto] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[Lieux]    Script Date: 23/05/2025 18:53:46 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Lieux](
+	[idLieu] [int] IDENTITY(1,1) NOT NULL,
+	[nomLieu] [varchar](50) NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[idLieu] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[Message]    Script Date: 23/05/2025 18:53:46 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Message](
+	[idMessage] [int] IDENTITY(1,1) NOT NULL,
+	[contenuMessage] [varchar](100) NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[idMessage] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[Remplacant]    Script Date: 23/05/2025 18:53:46 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Remplacant](
+	[idAdherents] [int] NOT NULL,
+	[post] [varchar](50) NULL,
+	[jeu] [varchar](50) NULL,
+	[salaire] [money] NULL,
+	[contrat] [varchar](50) NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[idAdherents] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[rencontreEquipe]    Script Date: 23/05/2025 18:53:46 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[rencontreEquipe](
+	[idEvenement] [int] NOT NULL,
+	[idEquipe] [int] NOT NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[idEvenement] ASC,
+	[idEquipe] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[Reunion]    Script Date: 23/05/2025 18:53:46 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Reunion](
+	[idReunion] [int] IDENTITY(1,1) NOT NULL,
+	[nomReunion] [varchar](50) NULL,
+	[idAdhrents] [int] NULL,
+	[dateReunion] [date] NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[idReunion] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[Sujet]    Script Date: 23/05/2025 18:53:46 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Sujet](
+	[idSujet] [int] IDENTITY(1,1) NOT NULL,
+	[typeDeSujet] [varchar](50) NULL,
+	[description] [varchar](50) NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[idSujet] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[type]    Script Date: 23/05/2025 18:53:46 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[type](
+	[idType] [int] IDENTITY(1,1) NOT NULL,
+	[nomType] [varchar](50) NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[idType] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+INSERT [dbo].[Aborder] ([idReunion], [idSujet]) VALUES (1, 1)
+GO
+INSERT [dbo].[Aborder] ([idReunion], [idSujet]) VALUES (1, 2)
+GO
+SET IDENTITY_INSERT [dbo].[Adherents] ON 
+GO
+INSERT [dbo].[Adherents] ([idAdherents], [nom], [prenom], [mail], [adresse], [dateAdhesion], [age], [NbEvenement], [password]) VALUES (1, N'DUPONT', N'jean', N'dupont.jean@gmail.com', N'34 rue ', CAST(N'2025-05-23' AS Date), 23, 2, N'F461017B99D054A79A4311BE3060A92DBE07D3C6A77FE4B30B7772B153B89756BA410349A9B9CAB89EA2E5D1F54155EB9E2D7F26B6820937828B66CA02AC4E43')
+GO
+INSERT [dbo].[Adherents] ([idAdherents], [nom], [prenom], [mail], [adresse], [dateAdhesion], [age], [NbEvenement], [password]) VALUES (2, N'MARTIN', N'louis', N'martin.louis@gmail.com', N'10 avenue', CAST(N'2025-05-23' AS Date), 19, 1, N'3247C4B3F8D609B39F0B758DD1D4346F0B7FB295D01A7C118AC59C3774C7DB3D2A04A0FE591FA97D46ED4CB73FCCF8555C662A28E0E31D0702A838AAFB480FD8')
+GO
+INSERT [dbo].[Adherents] ([idAdherents], [nom], [prenom], [mail], [adresse], [dateAdhesion], [age], [NbEvenement], [password]) VALUES (3, N'ROGER', N'joris', N'roger.joris@gmail.com', N'71 rue', CAST(N'2025-05-23' AS Date), 18, 0, N'39CB3E3AAB7360D97AD7B16B3C1ABA04749B76AEA79EF06289F970D88038B4BF41B60D16DEBA50A22EC72B017241F94AC9AE4C4CD0F3F97D32E3BE1204EBBBAD')
+GO
+INSERT [dbo].[Adherents] ([idAdherents], [nom], [prenom], [mail], [adresse], [dateAdhesion], [age], [NbEvenement], [password]) VALUES (4, N'DUBOIS', N'thomas', N'dubois.thomas@gmail.com', N'23 rue charle de gaule', CAST(N'2025-05-23' AS Date), 19, 1, N'CB2C6D81E4E6BFA77A32BD0E02307B5114A70271BCC1887557C2C844911CBFF9227F52FF54C63D9D58F1D18A2AE3D6AD0C21CCFAAEF5C8C6478E8CEAF8EF9EB6')
+GO
+INSERT [dbo].[Adherents] ([idAdherents], [nom], [prenom], [mail], [adresse], [dateAdhesion], [age], [NbEvenement], [password]) VALUES (5, N'FRANÇOIS', N'tibo', N'françois.tibo@gmail.com', N'6 rue monmartre', CAST(N'2025-05-23' AS Date), 29, 0, N'6801B33832EBBB4B54758C8ABCEACCD0CAD62169F8EA43C3106D3E440AFF136015D86F81BCB80FD038BDC3421398FA05FF24F9BC15FD87412F774A66661EF453')
+GO
+INSERT [dbo].[Adherents] ([idAdherents], [nom], [prenom], [mail], [adresse], [dateAdhesion], [age], [NbEvenement], [password]) VALUES (6, N'ANDRÉ', N'luc', N'andré.luc@gmail.com', NULL, CAST(N'2025-05-23' AS Date), NULL, 0, N'E4E42583944955378C4A7873650B2D53D94ADA6955BC9E1A1FC010DF1B7F098B4C851BB53E4512BC0A6B21072F38FED402CFF744EF9A53B986FF19C00D28F116')
+GO
+INSERT [dbo].[Adherents] ([idAdherents], [nom], [prenom], [mail], [adresse], [dateAdhesion], [age], [NbEvenement], [password]) VALUES (18, N'test2', N'test2', N'Invite@test2.fr', N'', CAST(N'2025-05-23' AS Date), NULL, 0, N'09576715814BEB7161C5F578F2C3FF993254AB015D47BFA5439782149D84EC66E0733AAB8FEA28598BE5CF456C66D65AF5BCE9E3B87910F0FA4A01FE152B0E91')
+GO
+INSERT [dbo].[Adherents] ([idAdherents], [nom], [prenom], [mail], [adresse], [dateAdhesion], [age], [NbEvenement], [password]) VALUES (26, N'aze', N'aze', N'Joueur@aze.fr', N'aze', CAST(N'2025-05-23' AS Date), 1, 0, N'0E15BF5B789F34926C82AD446579F4793CF7C04A207190669A6DA732F216480F6517DAC9A433BA8C7CBBB839FE59004E0A9B7BB783DD5833941B6883CF6A4D00')
+GO
+INSERT [dbo].[Adherents] ([idAdherents], [nom], [prenom], [mail], [adresse], [dateAdhesion], [age], [NbEvenement], [password]) VALUES (70, N'Dupont', NULL, NULL, NULL, CAST(N'2025-05-23' AS Date), NULL, 0, N'5D85484610EDBBBC19AAA861577C81FC17723D8C6B2CD5A430A6E77A7456EC67E4641365528220943D2FC2FD1813B1900CD53AC1493A3D2925647ED60C4271E2')
+GO
+INSERT [dbo].[Adherents] ([idAdherents], [nom], [prenom], [mail], [adresse], [dateAdhesion], [age], [NbEvenement], [password]) VALUES (71, N'aze', N'aze', N'aze@aze.aze12', N'aze', CAST(N'2025-05-23' AS Date), 185, 0, N'0E15BF5B789F34926C82AD446579F4793CF7C04A207190669A6DA732F216480F6517DAC9A433BA8C7CBBB839FE59004E0A9B7BB783DD5833941B6883CF6A4D00')
+GO
+INSERT [dbo].[Adherents] ([idAdherents], [nom], [prenom], [mail], [adresse], [dateAdhesion], [age], [NbEvenement], [password]) VALUES (72, N'Dupont', NULL, NULL, NULL, CAST(N'2025-05-23' AS Date), NULL, 0, N'5D85484610EDBBBC19AAA861577C81FC17723D8C6B2CD5A430A6E77A7456EC67E4641365528220943D2FC2FD1813B1900CD53AC1493A3D2925647ED60C4271E2')
+GO
+INSERT [dbo].[Adherents] ([idAdherents], [nom], [prenom], [mail], [adresse], [dateAdhesion], [age], [NbEvenement], [password]) VALUES (87, N'test', N'test', N'test@test.fr', N'test', CAST(N'2025-05-23' AS Date), 12, 0, N'EE26B0DD4AF7E749AA1A8EE3C10AE9923F618980772E473F8819A5D4940E0DB27AC185F8A0E1D5F84F88BC887FD67B143732C304CC5FA9AD8E6F57F50028A8FF')
+GO
+INSERT [dbo].[Adherents] ([idAdherents], [nom], [prenom], [mail], [adresse], [dateAdhesion], [age], [NbEvenement], [password]) VALUES (88, N'dirigeant', N'dirigeant', N'Dirigeant@otyuik.fr', N'dirigeant', CAST(N'2025-05-23' AS Date), 12, 0, N'9FBBBB5A0F329F9782E2356FA41D89CF9B3694327C1A934D6AF2A9DF2D7F936CE83717FB513196A4CE5548471708CD7134C2AE99B3C357BCABB2EAFC7B9B7570')
+GO
+INSERT [dbo].[Adherents] ([idAdherents], [nom], [prenom], [mail], [adresse], [dateAdhesion], [age], [NbEvenement], [password]) VALUES (97, N'i', N'i', N'i@i.i', N'az', CAST(N'2025-05-23' AS Date), 12, 0, N'B123E9E19D217169B981A61188920F9D28638709A5132201684D792B9264271B7F09157ED4321B1C097F7A4ABECFC0977D40A7EE599C845883BD1074CA23C4AF')
+GO
+INSERT [dbo].[Adherents] ([idAdherents], [nom], [prenom], [mail], [adresse], [dateAdhesion], [age], [NbEvenement], [password]) VALUES (98, N'y', N'y', N'y@y.y', N'er', CAST(N'2025-05-23' AS Date), 12, 0, N'DF8869886389348A866181F76125A23CB85302DAEBEC1765E5BE89347233B3E19B26D7B594F384BDADF419F6AC8B7EE3D86FA5A44A68FCD3FD14822BBDC94913')
+GO
+SET IDENTITY_INSERT [dbo].[Adherents] OFF
+GO
+INSERT [dbo].[AdherentsPresents] ([idAdherents], [idReunion]) VALUES (1, 1)
+GO
+INSERT [dbo].[AdherentsPresents] ([idAdherents], [idReunion]) VALUES (2, 1)
+GO
+INSERT [dbo].[AdherentsPresents] ([idAdherents], [idReunion]) VALUES (3, 1)
+GO
+INSERT [dbo].[Appel] ([idAdherents], [idEvenement], [presence]) VALUES (1, 3, 1)
+GO
+INSERT [dbo].[Appel] ([idAdherents], [idEvenement], [presence]) VALUES (1, 5, 1)
+GO
+INSERT [dbo].[Appel] ([idAdherents], [idEvenement], [presence]) VALUES (2, 7, 1)
+GO
+INSERT [dbo].[Appel] ([idAdherents], [idEvenement], [presence]) VALUES (4, 5, 1)
+GO
+INSERT [dbo].[contenuMessage] ([idAdherents], [idMessage]) VALUES (1, 1)
+GO
+INSERT [dbo].[contenuMessage] ([idAdherents], [idMessage]) VALUES (4, 2)
+GO
+INSERT [dbo].[dirigeant] ([idAdherents], [role], [jeu], [salaire], [contrat]) VALUES (2, N'coach', N'rl', 3566.0000, N'CDI')
+GO
+INSERT [dbo].[dirigeant] ([idAdherents], [role], [jeu], [salaire], [contrat]) VALUES (5, N'staff', N'lol', 3456.0000, N'CDD')
+GO
+INSERT [dbo].[dirigeant] ([idAdherents], [role], [jeu], [salaire], [contrat]) VALUES (88, NULL, NULL, NULL, NULL)
+GO
+SET IDENTITY_INSERT [dbo].[Equipe] ON 
+GO
+INSERT [dbo].[Equipe] ([idEquipe], [nomEquipe]) VALUES (1, N'M8')
+GO
+INSERT [dbo].[Equipe] ([idEquipe], [nomEquipe]) VALUES (2, N'BDS')
+GO
+INSERT [dbo].[Equipe] ([idEquipe], [nomEquipe]) VALUES (3, N'Vita')
+GO
+SET IDENTITY_INSERT [dbo].[Equipe] OFF
+GO
+SET IDENTITY_INSERT [dbo].[Evenements] ON 
+GO
+INSERT [dbo].[Evenements] ([idEvenement], [dateEvenement], [idEquipe], [nomEvenement], [descriptionEvenement], [idLieu], [idType], [heureDebut], [heureFin]) VALUES (3, CAST(N'2013-04-23' AS Date), 1, N'cup', N'oui', 2, 4, CAST(N'10:30:00' AS Time), CAST(N'11:30:00' AS Time))
+GO
+INSERT [dbo].[Evenements] ([idEvenement], [dateEvenement], [idEquipe], [nomEvenement], [descriptionEvenement], [idLieu], [idType], [heureDebut], [heureFin]) VALUES (5, CAST(N'2013-04-22' AS Date), 3, N'scrim', N'c''est cooll', 3, 2, CAST(N'09:45:00' AS Time), CAST(N'12:00:00' AS Time))
+GO
+INSERT [dbo].[Evenements] ([idEvenement], [dateEvenement], [idEquipe], [nomEvenement], [descriptionEvenement], [idLieu], [idType], [heureDebut], [heureFin]) VALUES (7, CAST(N'2013-04-22' AS Date), 1, N'test', NULL, 2, 4, CAST(N'09:45:00' AS Time), CAST(N'12:00:00' AS Time))
+GO
+SET IDENTITY_INSERT [dbo].[Evenements] OFF
+GO
+SET IDENTITY_INSERT [dbo].[HistoAdh] ON 
+GO
+INSERT [dbo].[HistoAdh] ([IdHisto], [dateHisto], [nom], [prenom], [mail], [adresse], [dateAdhesion], [age], [nbEvenement]) VALUES (1, CAST(N'2024-12-05T09:21:36.263' AS DateTime), N'TEST', N'oia', N'test.ok@gmail.com', N'34 rue test', CAST(N'2024-12-05T00:00:00.000' AS DateTime), 45, 0)
+GO
+INSERT [dbo].[HistoAdh] ([IdHisto], [dateHisto], [nom], [prenom], [mail], [adresse], [dateAdhesion], [age], [nbEvenement]) VALUES (2, CAST(N'2024-12-05T10:44:21.133' AS DateTime), N'TEST', N'pl', N'test.pl@gmail.com', NULL, NULL, NULL, 0)
+GO
+SET IDENTITY_INSERT [dbo].[HistoAdh] OFF
+GO
+INSERT [dbo].[Joueur] ([idAdherents], [post], [jeu], [salaire], [contrat]) VALUES (2, N'joueur_rl', N'rl', 245243.0000, N'CDD')
+GO
+INSERT [dbo].[Joueur] ([idAdherents], [post], [jeu], [salaire], [contrat]) VALUES (4, N'mid', N'lol', 345.0000, N'stagiaire')
+GO
+INSERT [dbo].[Joueur] ([idAdherents], [post], [jeu], [salaire], [contrat]) VALUES (26, N'test', NULL, NULL, NULL)
+GO
+SET IDENTITY_INSERT [dbo].[Lieux] ON 
+GO
+INSERT [dbo].[Lieux] ([idLieu], [nomLieu]) VALUES (1, N'paris')
+GO
+INSERT [dbo].[Lieux] ([idLieu], [nomLieu]) VALUES (2, N'lyon')
+GO
+INSERT [dbo].[Lieux] ([idLieu], [nomLieu]) VALUES (3, N'lille')
+GO
+INSERT [dbo].[Lieux] ([idLieu], [nomLieu]) VALUES (4, N'marseille')
+GO
+SET IDENTITY_INSERT [dbo].[Lieux] OFF
+GO
+SET IDENTITY_INSERT [dbo].[Message] ON 
+GO
+INSERT [dbo].[Message] ([idMessage], [contenuMessage]) VALUES (1, N'coolll')
+GO
+INSERT [dbo].[Message] ([idMessage], [contenuMessage]) VALUES (2, N'superrr')
+GO
+INSERT [dbo].[Message] ([idMessage], [contenuMessage]) VALUES (3, N'nullll')
+GO
+SET IDENTITY_INSERT [dbo].[Message] OFF
+GO
+INSERT [dbo].[Remplacant] ([idAdherents], [post], [jeu], [salaire], [contrat]) VALUES (2, N'top', N'lol', 2355.0000, N'CDD')
+GO
+INSERT [dbo].[rencontreEquipe] ([idEvenement], [idEquipe]) VALUES (3, 2)
+GO
+INSERT [dbo].[rencontreEquipe] ([idEvenement], [idEquipe]) VALUES (5, 3)
+GO
+SET IDENTITY_INSERT [dbo].[Reunion] ON 
+GO
+INSERT [dbo].[Reunion] ([idReunion], [nomReunion], [idAdhrents], [dateReunion]) VALUES (1, N'réunion staff', 2, CAST(N'2024-01-01' AS Date))
+GO
+SET IDENTITY_INSERT [dbo].[Reunion] OFF
+GO
+SET IDENTITY_INSERT [dbo].[Sujet] ON 
+GO
+INSERT [dbo].[Sujet] ([idSujet], [typeDeSujet], [description]) VALUES (1, N'discution world', N'on a fait ça')
+GO
+INSERT [dbo].[Sujet] ([idSujet], [typeDeSujet], [description]) VALUES (2, N'recrutement', N'c''est cool')
+GO
+SET IDENTITY_INSERT [dbo].[Sujet] OFF
+GO
+SET IDENTITY_INSERT [dbo].[type] ON 
+GO
+INSERT [dbo].[type] ([idType], [nomType]) VALUES (1, N'officiel')
+GO
+INSERT [dbo].[type] ([idType], [nomType]) VALUES (2, N'cup')
+GO
+INSERT [dbo].[type] ([idType], [nomType]) VALUES (3, N'world')
+GO
+INSERT [dbo].[type] ([idType], [nomType]) VALUES (4, N'Entraînement')
+GO
+SET IDENTITY_INSERT [dbo].[type] OFF
+GO
+ALTER TABLE [dbo].[Adherents] ADD  CONSTRAINT [DF_Adherents_NbEvenement]  DEFAULT ((0)) FOR [NbEvenement]
+GO
+ALTER TABLE [dbo].[Aborder]  WITH CHECK ADD FOREIGN KEY([idReunion])
+REFERENCES [dbo].[Reunion] ([idReunion])
+GO
+ALTER TABLE [dbo].[Aborder]  WITH CHECK ADD FOREIGN KEY([idSujet])
+REFERENCES [dbo].[Sujet] ([idSujet])
+GO
+ALTER TABLE [dbo].[AdherentsPresents]  WITH CHECK ADD  CONSTRAINT [FK__Adherents__idAdh__5CD6CB2B] FOREIGN KEY([idAdherents])
+REFERENCES [dbo].[Adherents] ([idAdherents])
+GO
+ALTER TABLE [dbo].[AdherentsPresents] CHECK CONSTRAINT [FK__Adherents__idAdh__5CD6CB2B]
+GO
+ALTER TABLE [dbo].[AdherentsPresents]  WITH CHECK ADD FOREIGN KEY([idReunion])
+REFERENCES [dbo].[Reunion] ([idReunion])
+GO
+ALTER TABLE [dbo].[Appel]  WITH CHECK ADD  CONSTRAINT [FK__Appel__idAdheren__5535A963] FOREIGN KEY([idAdherents])
+REFERENCES [dbo].[Adherents] ([idAdherents])
+GO
+ALTER TABLE [dbo].[Appel] CHECK CONSTRAINT [FK__Appel__idAdheren__5535A963]
+GO
+ALTER TABLE [dbo].[Appel]  WITH CHECK ADD FOREIGN KEY([idEvenement])
+REFERENCES [dbo].[Evenements] ([idEvenement])
+GO
+ALTER TABLE [dbo].[contenuMessage]  WITH CHECK ADD  CONSTRAINT [FK__contenuMe__idAdh__5165187F] FOREIGN KEY([idAdherents])
+REFERENCES [dbo].[Adherents] ([idAdherents])
+GO
+ALTER TABLE [dbo].[contenuMessage] CHECK CONSTRAINT [FK__contenuMe__idAdh__5165187F]
+GO
+ALTER TABLE [dbo].[contenuMessage]  WITH CHECK ADD FOREIGN KEY([idMessage])
+REFERENCES [dbo].[Message] ([idMessage])
+GO
+ALTER TABLE [dbo].[dirigeant]  WITH CHECK ADD  CONSTRAINT [FK__dirigeant__idAdh__45F365D3] FOREIGN KEY([idAdherents])
+REFERENCES [dbo].[Adherents] ([idAdherents])
+GO
+ALTER TABLE [dbo].[dirigeant] CHECK CONSTRAINT [FK__dirigeant__idAdh__45F365D3]
+GO
+ALTER TABLE [dbo].[Evenements]  WITH CHECK ADD FOREIGN KEY([idLieu])
+REFERENCES [dbo].[Lieux] ([idLieu])
+GO
+ALTER TABLE [dbo].[Evenements]  WITH CHECK ADD FOREIGN KEY([idType])
+REFERENCES [dbo].[type] ([idType])
+GO
+ALTER TABLE [dbo].[Joueur]  WITH CHECK ADD  CONSTRAINT [FK__Joueur__idAdhere__4316F928] FOREIGN KEY([idAdherents])
+REFERENCES [dbo].[Adherents] ([idAdherents])
+GO
+ALTER TABLE [dbo].[Joueur] CHECK CONSTRAINT [FK__Joueur__idAdhere__4316F928]
+GO
+ALTER TABLE [dbo].[Remplacant]  WITH CHECK ADD FOREIGN KEY([idAdherents])
+REFERENCES [dbo].[Joueur] ([idAdherents])
+GO
+ALTER TABLE [dbo].[rencontreEquipe]  WITH CHECK ADD FOREIGN KEY([idEquipe])
+REFERENCES [dbo].[Equipe] ([idEquipe])
+GO
+ALTER TABLE [dbo].[rencontreEquipe]  WITH CHECK ADD FOREIGN KEY([idEvenement])
+REFERENCES [dbo].[Evenements] ([idEvenement])
+GO
+/****** Object:  StoredProcedure [dbo].[AdherentsRenouveles]    Script Date: 23/05/2025 18:53:46 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE PROCEDURE [dbo].[AdherentsRenouveles]
+as
+    SELECT nom, prenom, dateAdhesion
+    FROM Adherents
+    WHERE YEAR(dateAdhesion) = YEAR(Getdate());
+
+GO
+/****** Object:  StoredProcedure [dbo].[EvenementsParAdherent]    Script Date: 23/05/2025 18:53:46 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE PROCEDURE [dbo].[EvenementsParAdherent](@adherentID INT)
+as
+    SELECT nom, prenom, nomEvenement,descriptionEvenement, presence
+    FROM Adherents 
+    JOIN Appel  ON Adherents.idAdherents = Appel.idAdherents
+    JOIN Evenements  ON Appel.idEvenement = Evenements.idEvenement
+    WHERE Adherents.idAdherents = @adherentID;
+GO
+/****** Object:  StoredProcedure [dbo].[HeuresEntrainementParJoueur]    Script Date: 23/05/2025 18:53:46 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE PROCEDURE [dbo].[HeuresEntrainementParJoueur]
+as
+    SELECT nom, prenom, sum(datediff(minute, heureDebut, heureFin)) AS totalMinutes
+    FROM Adherents 
+    JOIN Appel  ON Adherents.idAdherents = Appel.idAdherents
+    JOIN Evenements  ON Appel.idEvenement = Evenements.idEvenement
+	JOIN type ON Evenements.idType = type.idType
+    WHERE type.nomType  LIKE '%Entraînement'
+	GROUP by nom,prenom;
+GO
+/****** Object:  StoredProcedure [dbo].[NbEvenementsParJoueur]    Script Date: 23/05/2025 18:53:46 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE PROCEDURE [dbo].[NbEvenementsParJoueur](@joueurID INT, @dateDebut DATE, @dateFin DATE)
+as
+    SELECT COUNT(*) AS nombreEvenements
+    FROM Appel 
+    JOIN Evenements  ON Appel.idEvenement = Evenements.idEvenement
+    WHERE Appel.idAdherents = @joueurID AND Appel.presence = 1
+    AND Evenements.dateEvenement BETWEEN @dateDebut AND @dateFin;
+GO
+/****** Object:  StoredProcedure [dbo].[PointsTraiterReunion]    Script Date: 23/05/2025 18:53:46 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE PROCEDURE [dbo].[PointsTraiterReunion](@dateReunion date)
+AS
+    SELECT nomReunion, typeDeSujet, Sujet.description
+    FROM Reunion 
+    JOIN Aborder  ON Reunion.idReunion = Aborder.idReunion
+    JOIN Sujet  ON Aborder.idSujet = Sujet.idSujet
+    WHERE Reunion.dateReunion = @dateReunion;
+GO
+/****** Object:  Trigger [dbo].[DateAdhesion]    Script Date: 23/05/2025 18:53:46 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TRIGGER [dbo].[DateAdhesion]
+ON [dbo].[Adherents]
+AFTER INSERT
+AS
+
+
+    -- Met à jour la colonne Email avec le format nom.prenom@gmail.com
+		UPDATE Adherents
+		SET dateAdhesion = GETDATE()
+		FROM Adherents ;
+GO
+ALTER TABLE [dbo].[Adherents] ENABLE TRIGGER [DateAdhesion]
+GO
+/****** Object:  Trigger [dbo].[GenerateEmail]    Script Date: 23/05/2025 18:53:46 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TRIGGER [dbo].[GenerateEmail]
+ON [dbo].[Adherents]
+AFTER INSERT
+AS
+
+
+    -- Met à jour la colonne Email avec le format nom.prenom@gmail.com
+		UPDATE Adherents
+		SET mail = LOWER(nom) + '.' + LOWER(prenom) + '@gmail.com'
+		FROM Adherents ;
+GO
+ALTER TABLE [dbo].[Adherents] DISABLE TRIGGER [GenerateEmail]
+GO
+/****** Object:  Trigger [dbo].[HashPassword]    Script Date: 23/05/2025 18:53:46 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TRIGGER [dbo].[HashPassword]
+ON [dbo].[Adherents]
+AFTER INSERT, UPDATE
+AS
+BEGIN
+    -- Pour les insertions : hasher tous les nouveaux mots de passe
+    UPDATE Adherents
+    SET password = CONVERT(VARCHAR(128), HASHBYTES('SHA2_512', i.password), 2)
+    FROM Adherents a
+    INNER JOIN inserted i ON a.idAdherents = i.idAdherents
+    LEFT JOIN deleted d ON i.idAdherents = d.idAdherents
+    WHERE d.idAdherents IS NULL  -- C'est une insertion (pas de ligne dans deleted)
+        AND LEN(i.password) < 128;  -- S'assurer que ce n'est pas déjà hashé
+
+    -- Pour les mises à jour : hasher uniquement si le mot de passe a changé
+    UPDATE Adherents
+    SET password = CONVERT(VARCHAR(128), HASHBYTES('SHA2_512', i.password), 2)
+    FROM Adherents a
+    INNER JOIN inserted i ON a.idAdherents = i.idAdherents
+    INNER JOIN deleted d ON i.idAdherents = d.idAdherents
+    WHERE d.idAdherents IS NOT NULL  -- C'est une mise à jour (ligne existe dans deleted)
+        AND i.password != d.password  -- Le mot de passe a changé
+        AND LEN(i.password) < 128;    -- S'assurer que le nouveau mot de passe n'est pas déjà hashé
+END
+GO
+ALTER TABLE [dbo].[Adherents] ENABLE TRIGGER [HashPassword]
+GO
+/****** Object:  Trigger [dbo].[HistoAdherents]    Script Date: 23/05/2025 18:53:46 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TRIGGER [dbo].[HistoAdherents]
+ON [dbo].[Adherents]
+FOR DELETE
+AS
+INSERT INTO HistoAdh (DateHisto, nom, prenom, mail, adresse, dateAdhesion,age,nbEvenement)
+SELECT GetDate(),nom, prenom, mail, adresse, dateAdhesion,age,nbEvenement
+FROM deleted
+GO
+ALTER TABLE [dbo].[Adherents] DISABLE TRIGGER [HistoAdherents]
+GO
+/****** Object:  Trigger [dbo].[NomEnMaj]    Script Date: 23/05/2025 18:53:46 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TRIGGER [dbo].[NomEnMaj]
+ON [dbo].[Adherents]
+FOR INSERT
+AS
+UPDATE Adherents
+SET nom = UPPER(inserted.nom)
+FROM Adherents, inserted
+WHERE Adherents.nom = inserted.nom
+GO
+ALTER TABLE [dbo].[Adherents] DISABLE TRIGGER [NomEnMaj]
+GO
+/****** Object:  Trigger [dbo].[NbEvenementsParAdherent]    Script Date: 23/05/2025 18:53:46 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TRIGGER [dbo].[NbEvenementsParAdherent]
+ON [dbo].[Appel]
+FOR UPDATE 
+AS
+    -- Met à jour une colonne 'nbEvenements' (à ajouter dans Adherents si nécessaire)
+    UPDATE Adherents
+    SET NbEvenement = (SELECT COUNT(*) 
+                        FROM Appel 
+                        WHERE presence = 1 and Appel.idAdherents = Adherents.idAdherents );
+    
+GO
+ALTER TABLE [dbo].[Appel] ENABLE TRIGGER [NbEvenementsParAdherent]
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_DiagramPane1', @value=N'[0E232FF0-B466-11cf-A24F-00AA00A3EFFF, 1.00]
+Begin DesignProperties = 
+   Begin PaneConfigurations = 
+      Begin PaneConfiguration = 0
+         NumPanes = 4
+         Configuration = "(H (1[40] 4[20] 2[20] 3) )"
+      End
+      Begin PaneConfiguration = 1
+         NumPanes = 3
+         Configuration = "(H (1 [50] 4 [25] 3))"
+      End
+      Begin PaneConfiguration = 2
+         NumPanes = 3
+         Configuration = "(H (1 [50] 2 [25] 3))"
+      End
+      Begin PaneConfiguration = 3
+         NumPanes = 3
+         Configuration = "(H (4 [30] 2 [40] 3))"
+      End
+      Begin PaneConfiguration = 4
+         NumPanes = 2
+         Configuration = "(H (1 [56] 3))"
+      End
+      Begin PaneConfiguration = 5
+         NumPanes = 2
+         Configuration = "(H (2 [66] 3))"
+      End
+      Begin PaneConfiguration = 6
+         NumPanes = 2
+         Configuration = "(H (4 [50] 3))"
+      End
+      Begin PaneConfiguration = 7
+         NumPanes = 1
+         Configuration = "(V (3))"
+      End
+      Begin PaneConfiguration = 8
+         NumPanes = 3
+         Configuration = "(H (1[56] 4[18] 2) )"
+      End
+      Begin PaneConfiguration = 9
+         NumPanes = 2
+         Configuration = "(H (1 [75] 4))"
+      End
+      Begin PaneConfiguration = 10
+         NumPanes = 2
+         Configuration = "(H (1[66] 2) )"
+      End
+      Begin PaneConfiguration = 11
+         NumPanes = 2
+         Configuration = "(H (4 [60] 2))"
+      End
+      Begin PaneConfiguration = 12
+         NumPanes = 1
+         Configuration = "(H (1) )"
+      End
+      Begin PaneConfiguration = 13
+         NumPanes = 1
+         Configuration = "(V (4))"
+      End
+      Begin PaneConfiguration = 14
+         NumPanes = 1
+         Configuration = "(V (2))"
+      End
+      ActivePaneConfig = 0
+   End
+   Begin DiagramPane = 
+      Begin Origin = 
+         Top = 0
+         Left = 0
+      End
+      Begin Tables = 
+         Begin Table = "Evenements"
+            Begin Extent = 
+               Top = 7
+               Left = 48
+               Bottom = 170
+               Right = 290
+            End
+            DisplayFlags = 280
+            TopColumn = 0
+         End
+         Begin Table = "Appel"
+            Begin Extent = 
+               Top = 7
+               Left = 338
+               Bottom = 148
+               Right = 532
+            End
+            DisplayFlags = 280
+            TopColumn = 0
+         End
+         Begin Table = "Adherents"
+            Begin Extent = 
+               Top = 7
+               Left = 580
+               Bottom = 170
+               Right = 774
+            End
+            DisplayFlags = 280
+            TopColumn = 0
+         End
+      End
+   End
+   Begin SQLPane = 
+   End
+   Begin DataPane = 
+      Begin ParameterDefaults = ""
+      End
+   End
+   Begin CriteriaPane = 
+      Begin ColumnWidths = 11
+         Column = 1440
+         Alias = 900
+         Table = 1170
+         Output = 720
+         Append = 1400
+         NewValue = 1170
+         SortType = 1350
+         SortOrder = 1410
+         GroupBy = 1350
+         Filter = 1350
+         Or = 1350
+         Or = 1350
+         Or = 1350
+      End
+   End
+End
+' , @level0type=N'SCHEMA',@level0name=N'dbo', @level1type=N'VIEW',@level1name=N'EvenementsPersonnesPresentes'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_DiagramPaneCount', @value=1 , @level0type=N'SCHEMA',@level0name=N'dbo', @level1type=N'VIEW',@level1name=N'EvenementsPersonnesPresentes'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_DiagramPane1', @value=N'[0E232FF0-B466-11cf-A24F-00AA00A3EFFF, 1.00]
+Begin DesignProperties = 
+   Begin PaneConfigurations = 
+      Begin PaneConfiguration = 0
+         NumPanes = 4
+         Configuration = "(H (1[40] 4[20] 2[20] 3) )"
+      End
+      Begin PaneConfiguration = 1
+         NumPanes = 3
+         Configuration = "(H (1 [50] 4 [25] 3))"
+      End
+      Begin PaneConfiguration = 2
+         NumPanes = 3
+         Configuration = "(H (1 [50] 2 [25] 3))"
+      End
+      Begin PaneConfiguration = 3
+         NumPanes = 3
+         Configuration = "(H (4 [30] 2 [40] 3))"
+      End
+      Begin PaneConfiguration = 4
+         NumPanes = 2
+         Configuration = "(H (1 [56] 3))"
+      End
+      Begin PaneConfiguration = 5
+         NumPanes = 2
+         Configuration = "(H (2 [66] 3))"
+      End
+      Begin PaneConfiguration = 6
+         NumPanes = 2
+         Configuration = "(H (4 [50] 3))"
+      End
+      Begin PaneConfiguration = 7
+         NumPanes = 1
+         Configuration = "(V (3))"
+      End
+      Begin PaneConfiguration = 8
+         NumPanes = 3
+         Configuration = "(H (1[56] 4[18] 2) )"
+      End
+      Begin PaneConfiguration = 9
+         NumPanes = 2
+         Configuration = "(H (1 [75] 4))"
+      End
+      Begin PaneConfiguration = 10
+         NumPanes = 2
+         Configuration = "(H (1[66] 2) )"
+      End
+      Begin PaneConfiguration = 11
+         NumPanes = 2
+         Configuration = "(H (4 [60] 2))"
+      End
+      Begin PaneConfiguration = 12
+         NumPanes = 1
+         Configuration = "(H (1) )"
+      End
+      Begin PaneConfiguration = 13
+         NumPanes = 1
+         Configuration = "(V (4))"
+      End
+      Begin PaneConfiguration = 14
+         NumPanes = 1
+         Configuration = "(V (2))"
+      End
+      ActivePaneConfig = 0
+   End
+   Begin DiagramPane = 
+      Begin Origin = 
+         Top = 0
+         Left = 0
+      End
+      Begin Tables = 
+         Begin Table = "Adherents"
+            Begin Extent = 
+               Top = 7
+               Left = 48
+               Bottom = 170
+               Right = 242
+            End
+            DisplayFlags = 280
+            TopColumn = 0
+         End
+         Begin Table = "dirigeant"
+            Begin Extent = 
+               Top = 7
+               Left = 290
+               Bottom = 170
+               Right = 484
+            End
+            DisplayFlags = 280
+            TopColumn = 0
+         End
+         Begin Table = "Joueur"
+            Begin Extent = 
+               Top = 7
+               Left = 532
+               Bottom = 170
+               Right = 726
+            End
+            DisplayFlags = 280
+            TopColumn = 0
+         End
+      End
+   End
+   Begin SQLPane = 
+   End
+   Begin DataPane = 
+      Begin ParameterDefaults = ""
+      End
+   End
+   Begin CriteriaPane = 
+      Begin ColumnWidths = 11
+         Column = 1440
+         Alias = 900
+         Table = 1176
+         Output = 720
+         Append = 1400
+         NewValue = 1170
+         SortType = 1356
+         SortOrder = 1416
+         GroupBy = 1350
+         Filter = 1356
+         Or = 1350
+         Or = 1350
+         Or = 1350
+      End
+   End
+End
+' , @level0type=N'SCHEMA',@level0name=N'dbo', @level1type=N'VIEW',@level1name=N'ListeAdherents'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_DiagramPaneCount', @value=1 , @level0type=N'SCHEMA',@level0name=N'dbo', @level1type=N'VIEW',@level1name=N'ListeAdherents'
+GO
+USE [master]
+GO
+ALTER DATABASE [AP4] SET  READ_WRITE 
+GO
