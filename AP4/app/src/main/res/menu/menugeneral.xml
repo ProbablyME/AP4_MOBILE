@@ -10,5 +10,21 @@
         android:id="@+id/menuReserver"
         android:title="@string/txtMenuReservation" />
 
+    <!-- Nouveaux items Login & Register -->
+    <item
+        android:id="@+id/menuLogin"
+        android:title="@string/txtMenuLogin" />
+
+    <item
+        android:id="@+id/menuRegister"
+        android:title="@string/txtMenuRegister" />
+
+    <item
+        android:id="@+id/menuViewAdherents"
+        android:title="Voir adhérents"/>
+
+    <item
+        android:id="@+id/menuProfile"
+        android:title="Profil"/>
 
 </menu>

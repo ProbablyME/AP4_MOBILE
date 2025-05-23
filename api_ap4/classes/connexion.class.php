@@ -6,7 +6,7 @@ class Connexion {
         $server   = 'sql-lp.database.windows.net';       
         $database = 'AP4';
         $username = 'lp';               
-        $password = 'zWyu99.o';                 
+        $password = 'zWyu99.o'; 
 
         try {
             $pdo = new PDO(

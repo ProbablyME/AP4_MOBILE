@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp">
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <EditText
+            android:id="@+id/edt_id"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:enabled="false"/>
+
+        <EditText
+            android:id="@+id/edt_nom"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Nom"/>
+
+        <EditText
+            android:id="@+id/edt_prenom"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Prénom"/>
+
+        <EditText
+            android:id="@+id/edt_mail"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Mail"
+            android:inputType="textEmailAddress"/>
+
+
+        <EditText
+            android:id="@+id/edt_adresse"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Adresse"/>
+
+        <EditText
+            android:id="@+id/edt_age"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Âge"
+            android:inputType="number"/>
+
+        <EditText
+            android:id="@+id/edt_nb_events"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Nombre d’événements"
+            android:enabled="false"/>
+
+        <Button
+            android:id="@+id/btn_save_profile"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Enregistrer"/>
+    </LinearLayout>
+</ScrollView>

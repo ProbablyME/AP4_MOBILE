@@ -1,6 +1,7 @@
 package com.example.ap4;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -21,6 +22,8 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 
 import com.google.android.material.appbar.MaterialToolbar;
+
+import android.content.Intent;
 
 
 
@@ -64,6 +67,37 @@ public class MainActivity extends AppCompatActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
 
+        // ─── NOUVEAU : récupère et stocke l'utilisateur connecté ───
+        Intent launchIntent = getIntent();
+        int    userId   = launchIntent.getIntExtra("id", 0);
+        String nom      = launchIntent.getStringExtra("nom");
+        String prenom   = launchIntent.getStringExtra("prenom");
+        String mail     = launchIntent.getStringExtra("mail");
+        String adresse  = launchIntent.getStringExtra("adresse");
+        int    age      = launchIntent.getIntExtra("age", 0);
+        int    nbEvents = launchIntent.getIntExtra("nbEvents", 0);
+
+// On stocke tout ça en SharedPreferences
+        SharedPreferences prefs = getSharedPreferences("user", MODE_PRIVATE);
+        prefs.edit()
+                .putInt("id",       userId)
+                .putString("nom",   nom)
+                .putString("prenom",prenom)
+                .putString("mail",  mail)
+                .putString("adresse", adresse)
+                .putInt("age",      age)
+                .putInt("nbEvents", nbEvents)
+                .apply();
+
+// Puis on peut afficher le toast
+        if (mail != null) {
+            Toast.makeText(this,
+                    "Connecté en tant de " + prenom + " " + nom,
+                    Toast.LENGTH_LONG
+            ).show();
+        }
+        // ──────────────────────────────────────────────────────────────
+
         // 1) Trouver la toolbar et l'activer
         MaterialToolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -103,7 +137,7 @@ public class MainActivity extends AppCompatActivity {
                 intent  = new Intent(this, Valorant.class);
             }
             else if (id == R.id.btnLeagueOfLegendsLEC) {
-                nomJeu  = "League of Legends (LEC)";
+                nomJeu  = "League of Legends (LEC)  ";
                 codeJeu = "lol";
                 intent  = new Intent(this, League_of_Legends_LEC.class);
             }
@@ -163,7 +197,27 @@ public class MainActivity extends AppCompatActivity {
             );
             return true;
         }
-        // ... tes autres items de menu ...
+        else if (id == R.id.menuLogin) {
+            // Lance l'écran de connexion
+            startActivity(new Intent(this, Login.class));
+            return true;
+        }
+        else if (id == R.id.menuRegister) {
+            // Lance l'écran d'inscription
+            startActivity(new Intent(this, Register.class));
+            return true;
+        }
+        else if (id == R.id.menuViewAdherents) {
+            // Nouveau : lance l'activité qui affiche la liste des adhérents
+            startActivity(new Intent(this, AdherentsListActivity.class));
+            return true;
+        }
+        else if (id == R.id.menuProfile) {
+            startActivity(new Intent(this, ProfileActivity.class));
+            return true;
+        }
+
+
         else {
             return super.onOptionsItemSelected(item);
         }
